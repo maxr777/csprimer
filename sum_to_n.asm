@@ -8,10 +8,10 @@ _start:
 loop:
   inc rcx       ; increment the counter
   add rax, rcx  ; add the counter to the accumulator
-  cmp rcx, [n]    ; rcx == n?
+  cmp rcx, [n]  ; rcx == n?
   jne loop      ; if no, jump to loop
 
-  mov rdi, rax  ; the result can be the exit status, quicker than converting the result to string and then printing it
+  mov rdi, rax  ; use result as the exit status
   mov rax, 60
   syscall       ; exit syscall
 

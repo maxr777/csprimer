@@ -1,28 +1,32 @@
 #include <arpa/inet.h>
 #include <stdio.h>
+#include <string.h>
 #include <sys/socket.h>
 #define BUFFER_SIZE 65507
 
 int main() {
-  int s = socket(AF_INET, SOCK_DGRAM, 0);
-  if (s < 0) {
+  int sfd = socket(AF_INET, SOCK_DGRAM, 0);
+  if (sfd < 0) {
     perror("socket failed");
     return 1;
   }
 
   struct sockaddr_in sa;
-  inet_pton(AF_INET, "127.0.0.1", &(sa.sin_addr));
+  sa.sin_family = AF_INET;
+  sa.sin_port = htons(8888);
+  sa.sin_addr.s_addr = inet_addr("127.0.0.1");
+  memset(sa.sin_zero, '\0', sizeof(sa.sin_zero));
+
   socklen_t sender_len = sizeof(sa);
 
-  int b = bind(s, (struct sockaddr *)&sa, sender_len);
-  if (b < 0) {
+  if (bind(sfd, (struct sockaddr *)&sa, sender_len) < 0) {
     perror("bind failed");
     return 1;
   }
 
   while (1) {
     char buffer[BUFFER_SIZE];
-    recvfrom(s, buffer, sizeof(buffer), 0, (struct sockaddr *)&sa, &sender_len);
-    printf("%s\n", buffer);
+    recvfrom(sfd, buffer, sizeof(buffer), 0, (struct sockaddr *)&sa, &sender_len);
+    sendto(sfd, buffer, sizeof(buffer), 0, (struct sockaddr *)&sa, sender_len);
   }
 }
