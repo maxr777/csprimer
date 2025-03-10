@@ -6,8 +6,11 @@
 
 #define PORT "8814"
 #define BACKLOG 5
+#define BUFFER_SIZE 65507
 
 int main() {
+  struct sockaddr_storage their_addr;
+  socklen_t their_addr_len;
   struct addrinfo hints, *res;
   int s;
 
@@ -29,4 +32,20 @@ int main() {
   }
 
   listen(s, BACKLOG);
+
+  accept(s, (struct sockaddr *)&their_addr, &their_addr_len);
+
+  while (1) {
+    char buffer[BUFFER_SIZE];
+    int n = recv(s, &buffer, BUFFER_SIZE, 0);
+
+    if (n == 0)
+      break;
+    else if (n < 0) {
+      perror("recv() error:");
+      return 1;
+    }
+
+    printf("%s\n", buffer);
+  }
 }
